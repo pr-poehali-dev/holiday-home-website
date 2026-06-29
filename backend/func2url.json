@@ -1,4 +1,5 @@
 {
+  "rooms": "https://functions.poehali.dev/27ae9fb7-d022-42cb-9756-7033783f34ab",
   "admin": "https://functions.poehali.dev/d14741ba-262b-4ff6-9118-1760657177d4",
   "reviews": "https://functions.poehali.dev/fbd33beb-7570-4a91-805b-79f355257570",
   "bookings": "https://functions.poehali.dev/a74f5703-07a3-4d7d-8a8b-835e61408958"

@@ -1,31 +1,35 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { PRICE, ROOMS, BOOKING_URL } from './constants';
+import { BOOKING_URL, RoomData } from './constants';
 
 interface PriceContactsProps {
   scrollTo: (id: string) => void;
+  rooms: RoomData[];
 }
 
-export default function PriceContacts({ scrollTo }: PriceContactsProps) {
-  const [form, setForm] = useState({ check_in: '', check_out: '', room_name: ROOMS[0].name, guest_name: '', phone: '' });
+export default function PriceContacts({ scrollTo, rooms }: PriceContactsProps) {
+  const [form, setForm] = useState({ check_in: '', check_out: '', room_name: '', guest_name: '', phone: '' });
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formMsg, setFormMsg] = useState('');
+
+  const fmt = (n: number) => n.toLocaleString('ru-RU') + ' ₽';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState('loading');
+    const room_name = form.room_name || (rooms[0]?.name ?? '');
     try {
       const res = await fetch(BOOKING_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, room_name }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
         setFormState('success');
         setFormMsg(data.message || 'Заявка принята!');
-        setForm({ check_in: '', check_out: '', room_name: ROOMS[0].name, guest_name: '', phone: '' });
+        setForm({ check_in: '', check_out: '', room_name: '', guest_name: '', phone: '' });
       } else {
         setFormState('error');
         setFormMsg(data.error || 'Ошибка отправки. Попробуйте ещё раз.');
@@ -53,11 +57,11 @@ export default function PriceContacts({ scrollTo }: PriceContactsProps) {
               <div className="p-4 md:p-5 text-center">Выходные</div>
               <div className="p-4 md:p-5 text-center">Завтрак</div>
             </div>
-            {PRICE.map((p, i) => (
-              <div key={p.room} className={`grid grid-cols-4 items-center ${i % 2 ? 'bg-muted/30' : ''}`}>
-                <div className="p-4 md:p-5 font-display text-lg font-bold">{p.room}</div>
-                <div className="p-4 md:p-5 text-center">{p.low}</div>
-                <div className="p-4 md:p-5 text-center">{p.high}</div>
+            {rooms.map((r, i) => (
+              <div key={r.id} className={`grid grid-cols-4 items-center ${i % 2 ? 'bg-muted/30' : ''}`}>
+                <div className="p-4 md:p-5 font-display text-lg font-bold">{r.name}</div>
+                <div className="p-4 md:p-5 text-center">{fmt(r.price_low)}</div>
+                <div className="p-4 md:p-5 text-center">{fmt(r.price_weekend)}</div>
                 <div className="p-4 md:p-5 text-center text-primary"><Icon name="Check" size={18} className="inline" /></div>
               </div>
             ))}
@@ -121,9 +125,14 @@ export default function PriceContacts({ scrollTo }: PriceContactsProps) {
                 </div>
                 <div>
                   <label className="text-sm font-medium mb-1.5 block">Номер</label>
-                  <select value={form.room_name} onChange={(e) => setForm({ ...form, room_name: e.target.value })}
-                    className="w-full rounded-xl border border-input bg-background px-4 h-12 focus:ring-2 focus:ring-primary outline-none">
-                    {ROOMS.map((r) => <option key={r.name} value={r.name}>{r.name} — от {r.price}</option>)}
+                  <select
+                    value={form.room_name || (rooms[0]?.name ?? '')}
+                    onChange={(e) => setForm({ ...form, room_name: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-background px-4 h-12 focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    {rooms.map((r) => (
+                      <option key={r.id} value={r.name}>{r.name} — от {fmt(r.price_low)}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

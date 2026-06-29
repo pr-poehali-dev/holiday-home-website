@@ -1,15 +1,17 @@
-import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
-import { IMG, NAV, ROOMS } from './constants';
+import { IMG, NAV, RoomData } from './constants';
 
 interface HeroNavProps {
   scrollTo: (id: string) => void;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
+  rooms: RoomData[];
 }
 
-export default function HeroNav({ scrollTo, menuOpen, setMenuOpen }: HeroNavProps) {
+export default function HeroNav({ scrollTo, menuOpen, setMenuOpen, rooms }: HeroNavProps) {
+  const fmt = (n: number) => n.toLocaleString('ru-RU') + ' ₽';
+
   return (
     <>
       {/* NAV */}
@@ -115,19 +117,19 @@ export default function HeroNav({ scrollTo, menuOpen, setMenuOpen }: HeroNavProp
             <h2 className="font-display text-4xl md:text-5xl font-bold">Выберите свой уголок уюта</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {ROOMS.map((r) => (
-              <div key={r.name} className="group bg-card rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+            {rooms.map((r) => (
+              <div key={r.id} className="group bg-card rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                 <div className="relative overflow-hidden aspect-[4/3]">
-                  <img src={r.img} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <img src={r.image_url} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                   <div className="absolute top-4 right-4 bg-secondary text-white px-4 py-1.5 rounded-full font-semibold text-sm">
-                    от {r.price}/ночь
+                    от {fmt(r.price_low)}/ночь
                   </div>
                 </div>
                 <div className="p-6">
                   <h3 className="font-display text-2xl font-bold mb-2">{r.name}</h3>
                   <div className="flex gap-4 text-sm text-muted-foreground mb-4">
-                    <span className="flex items-center gap-1"><Icon name="Maximize2" size={15} /> {r.area}</span>
-                    <span className="flex items-center gap-1"><Icon name="Users" size={15} /> {r.guests}</span>
+                    <span className="flex items-center gap-1"><Icon name="Maximize2" size={15} /> {r.area} м²</span>
+                    <span className="flex items-center gap-1"><Icon name="Users" size={15} /> {r.max_guests} гост.</span>
                   </div>
                   <ul className="space-y-2 mb-6">
                     {r.features.map((f) => (

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { REVIEWS_URL } from '@/components/resort/constants';
+import { REVIEWS_URL, ROOMS_URL, RoomData } from '@/components/resort/constants';
 import HeroNav from '@/components/resort/HeroNav';
 import GalleryReviews from '@/components/resort/GalleryReviews';
 import PriceContacts from '@/components/resort/PriceContacts';
@@ -9,6 +9,7 @@ type Review = { id: number; guest_name: string; rating: number; text: string; cr
 const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [rooms, setRooms] = useState<RoomData[]>([]);
 
   useEffect(() => {
     fetch(REVIEWS_URL)
@@ -16,6 +17,14 @@ const Index = () => {
       .then((d) => {
         const raw = typeof d === 'string' ? JSON.parse(d) : d;
         setReviews(raw.reviews || []);
+      })
+      .catch(() => {});
+
+    fetch(ROOMS_URL)
+      .then((r) => r.json())
+      .then((d) => {
+        const raw = typeof d === 'string' ? JSON.parse(d) : d;
+        setRooms(raw.rooms || []);
       })
       .catch(() => {});
   }, []);
@@ -27,9 +36,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
-      <HeroNav scrollTo={scrollTo} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <HeroNav scrollTo={scrollTo} menuOpen={menuOpen} setMenuOpen={setMenuOpen} rooms={rooms} />
       <GalleryReviews reviews={reviews} setReviews={setReviews} />
-      <PriceContacts scrollTo={scrollTo} />
+      <PriceContacts scrollTo={scrollTo} rooms={rooms} />
     </div>
   );
 };

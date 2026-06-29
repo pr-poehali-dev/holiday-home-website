@@ -1,5 +1,6 @@
 export const BOOKING_URL = 'https://functions.poehali.dev/a74f5703-07a3-4d7d-8a8b-835e61408958';
 export const REVIEWS_URL = 'https://functions.poehali.dev/fbd33beb-7570-4a91-805b-79f355257570';
+export const ROOMS_URL = 'https://functions.poehali.dev/27ae9fb7-d022-42cb-9756-7033783f34ab';
 
 export const IMG = {
   room: 'https://cdn.poehali.dev/projects/9a519718-fc67-426b-b046-0b872bccf557/files/f47c3690-850e-437d-80c5-a8b5f209ee72.jpg',
@@ -30,6 +31,19 @@ export const PRICE = [
   { room: 'Комфорт', low: '6 800 ₽', high: '8 200 ₽', breakfast: 'включён' },
   { room: 'Люкс', low: '9 900 ₽', high: '12 500 ₽', breakfast: 'включён' },
 ];
+
+export type RoomData = {
+  id: number;
+  name: string;
+  description: string;
+  area: number;
+  max_guests: number;
+  price_low: number;
+  price_high: number;
+  price_weekend: number;
+  image_url: string;
+  features: string[];
+};
 
 export const GALLERY = [
   { src: IMG.room, cat: 'Номера' },

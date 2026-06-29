@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "GET rooms list",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"rooms": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "PUT room unauthorized",
+      "method": "PUT",
+      "path": "/",
+      "body": {"id": 1, "price_low": 5000},
+      "expectedStatus": 401,
+      "expectedBody": {"ok": false},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
