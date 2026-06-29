@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "GET reviews list",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"reviews": []},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST review success",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "guest_name": "Мария",
+        "rating": 5,
+        "text": "Отличный отдых, всё понравилось!"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST review missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"guest_name": "Тест"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Заполните все поля и укажите оценку от 1 до 5"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

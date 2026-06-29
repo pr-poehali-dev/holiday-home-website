@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Icon from '@/components/ui/icon';
 import { Button } from '@/components/ui/button';
 
 const BOOKING_URL = 'https://functions.poehali.dev/a74f5703-07a3-4d7d-8a8b-835e61408958';
+const REVIEWS_URL = 'https://functions.poehali.dev/fbd33beb-7570-4a91-805b-79f355257570';
 
 const IMG = {
   room: 'https://cdn.poehali.dev/projects/9a519718-fc67-426b-b046-0b872bccf557/files/f47c3690-850e-437d-80c5-a8b5f209ee72.jpg',
@@ -16,6 +17,7 @@ const NAV = [
   { id: 'rooms', label: 'Номера' },
   { id: 'pool', label: 'Бассейн' },
   { id: 'gallery', label: 'Галерея' },
+  { id: 'reviews', label: 'Отзывы' },
   { id: 'price', label: 'Прайс' },
   { id: 'contacts', label: 'Контакты' },
   { id: 'booking', label: 'Бронирование' },
@@ -46,6 +48,46 @@ const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [filter, setFilter] = useState('Все');
   const [lightbox, setLightbox] = useState<string | null>(null);
+
+  const [reviews, setReviews] = useState<{ id: number; guest_name: string; rating: number; text: string; created_at: string }[]>([]);
+  const [reviewForm, setReviewForm] = useState({ guest_name: '', rating: 5, text: '' });
+  const [reviewState, setReviewState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [reviewMsg, setReviewMsg] = useState('');
+
+  useEffect(() => {
+    fetch(REVIEWS_URL)
+      .then((r) => r.json())
+      .then((d) => {
+        const raw = typeof d === 'string' ? JSON.parse(d) : d;
+        setReviews(raw.reviews || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReviewState('loading');
+    try {
+      const res = await fetch(REVIEWS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewForm),
+      });
+      const raw = await res.json();
+      const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (res.ok && data.ok) {
+        setReviewState('success');
+        setReviewMsg(data.message || 'Спасибо за отзыв!');
+        setReviewForm({ guest_name: '', rating: 5, text: '' });
+      } else {
+        setReviewState('error');
+        setReviewMsg(data.error || 'Ошибка. Попробуйте ещё раз.');
+      }
+    } catch {
+      setReviewState('error');
+      setReviewMsg('Ошибка соединения. Попробуйте ещё раз.');
+    }
+  };
 
   const [form, setForm] = useState({ check_in: '', check_out: '', room_name: ROOMS[0].name, guest_name: '', phone: '' });
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -290,6 +332,101 @@ const Index = () => {
           <img src={lightbox} alt="" className="max-w-full max-h-full rounded-2xl shadow-2xl animate-scale-in" />
         </div>
       )}
+
+      {/* REVIEWS */}
+      <section id="reviews" className="py-24 bg-muted/40">
+        <div className="container">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <p className="text-secondary font-semibold tracking-widest uppercase text-sm mb-3">Отзывы</p>
+            <h2 className="font-display text-4xl md:text-5xl font-bold">Что говорят наши гости</h2>
+          </div>
+
+          {/* Карточки отзывов */}
+          {reviews.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-14">
+              {reviews.map((r) => (
+                <div key={r.id} className="bg-card rounded-3xl p-6 shadow-md flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-display font-bold text-primary text-lg">
+                        {r.guest_name[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">{r.guest_name}</div>
+                        <div className="text-xs text-muted-foreground">{r.created_at}</div>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map((s) => (
+                        <Icon key={s} name="Star" size={14} className={s <= r.rating ? 'text-accent fill-accent' : 'text-muted-foreground'} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground/80 leading-relaxed">"{r.text}"</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground mb-14">Будьте первым, кто оставит отзыв!</p>
+          )}
+
+          {/* Форма отзыва */}
+          <div className="max-w-xl mx-auto bg-card rounded-3xl p-8 shadow-xl">
+            <h3 className="font-display text-2xl font-bold mb-6">Оставить отзыв</h3>
+            {reviewState === 'success' ? (
+              <div className="flex flex-col items-center py-8 gap-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                  <Icon name="CheckCircle2" size={32} />
+                </div>
+                <p className="font-semibold">{reviewMsg}</p>
+                <Button variant="outline" className="rounded-full" onClick={() => setReviewState('idle')}>
+                  Написать ещё
+                </Button>
+              </div>
+            ) : (
+              <form className="space-y-4" onSubmit={handleReviewSubmit}>
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">Ваше имя</label>
+                  <input required type="text" placeholder="Иван Иванов"
+                    value={reviewForm.guest_name}
+                    onChange={(e) => setReviewForm({ ...reviewForm, guest_name: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-background px-4 h-12 focus:ring-2 focus:ring-primary outline-none" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">Оценка</label>
+                  <div className="flex gap-2">
+                    {[1,2,3,4,5].map((s) => (
+                      <button key={s} type="button" onClick={() => setReviewForm({ ...reviewForm, rating: s })}
+                        className="transition-transform hover:scale-110">
+                        <Icon name="Star" size={28} className={s <= reviewForm.rating ? 'text-accent fill-accent' : 'text-muted-foreground'} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1.5 block">Ваш отзыв</label>
+                  <textarea required rows={4} placeholder="Поделитесь впечатлениями об отдыхе..."
+                    value={reviewForm.text}
+                    onChange={(e) => setReviewForm({ ...reviewForm, text: e.target.value })}
+                    className="w-full rounded-xl border border-input bg-background px-4 py-3 focus:ring-2 focus:ring-primary outline-none resize-none" />
+                </div>
+                {reviewState === 'error' && (
+                  <p className="text-sm text-destructive flex items-center gap-2">
+                    <Icon name="AlertCircle" size={16} /> {reviewMsg}
+                  </p>
+                )}
+                <Button type="submit" size="lg" disabled={reviewState === 'loading'}
+                  className="w-full rounded-full bg-secondary hover:bg-secondary/90 text-white h-14 text-base">
+                  {reviewState === 'loading'
+                    ? <><Icon name="Loader2" size={20} className="mr-2 animate-spin" /> Отправляем...</>
+                    : <><Icon name="Send" size={20} className="mr-2" /> Отправить отзыв</>
+                  }
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* PRICE */}
       <section id="price" className="py-24 bg-muted/40">
