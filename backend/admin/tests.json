@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "POST login wrong password",
+      "method": "POST",
+      "path": "/?action=login",
+      "body": {"password": "wrongpass"},
+      "expectedStatus": 401,
+      "expectedBody": {"ok": false},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "GET bookings unauthorized",
+      "method": "GET",
+      "path": "/?action=bookings",
+      "expectedStatus": 401,
+      "expectedBody": {"ok": false},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
