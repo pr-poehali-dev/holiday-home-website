@@ -1,0 +1,29 @@
+{
+  "tests": [
+    {
+      "name": "POST booking success",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "guest_name": "Иван Иванов",
+        "phone": "+7 (999) 123-45-67",
+        "room_name": "Стандарт",
+        "check_in": "2026-07-10",
+        "check_out": "2026-07-15",
+        "guests_count": 2
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "POST booking missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"guest_name": "Тест"},
+      "expectedStatus": 400,
+      "expectedBody": {"error": "Заполните все обязательные поля"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
